@@ -5,8 +5,16 @@ on openItem()
 	
 end openItem
 
+-- Relies on: 
+--	1. A Keyboard Maestro Macro called Get Name. This in turn depends on #2 and #3.
+--	2. A Keyboard Maestro Macro called Trigger Context menu. 
+--		Why? I use KM to simulate mouse clicks. For reasons unbeknownst to me,
+--		the usual 'AXPress' action on the item is not responding purely via AppleScript.
+--	3. JSON Helper, because I'm lazy and it was the closest available JSON parser. 
+--		https://apps.apple.com/us/app/json-helper-for-applescript/id453114608?mt=12
 on getName()
 	tell application "Keyboard Maestro Engine"
+		-- Replace the key below with the UUID of the Get Name macro in your library.
 		do script "75997582-CA67-4297-A731-B2B4B6737BCE"
 		-- or: do script "Get Name"
 		-- or: do script "AA1810E9-3A37-47F1-AC87-9515A637F8A7" with parameter "Whatever"
@@ -17,8 +25,14 @@ on getName()
 	
 end getName
 
+-- Relies on: 
+--	1. A Keyboard Maestro Macro called Get Address. This depends on #2.
+--	2. A Keyboard Maestro Macro called Trigger Context menu. 
+--		Why? I use KM to simulate mouse clicks. For reasons unbeknownst to me,
+--		the usual 'AXPress' action on the item is not responding purely via AppleScript.
 on getAddress()
 	tell application "Keyboard Maestro Engine"
+		-- Replace the key below with the UUID of the Get Address macro in your library.
 		do script "020C0E13-26F2-4905-9164-C0A95884F69B"
 		-- or: do script "Get Address"
 		
@@ -28,6 +42,9 @@ on getAddress()
 	
 end getAddress
 
+-- Relies on two items: 
+-- 		1. Text script library, from https://github.com/mattneub/applescript-stdlib, installed in ~/Script Libraries
+--		2. Day One 2.0 CLI, from https://help.dayoneapp.com/en/articles/435871-command-line-interface-cli
 on newItem()
 	set entryText to "$title"
 	set theResult to do shell script "/usr/local/bin/dayone2 new \"" & entryText & "\""
@@ -37,24 +54,3 @@ on newItem()
 	set theEntryAddress to "dayone2://view?entryId=" & theUUID
 	get theEntryAddress
 end newItem
-
---getAddress()
-tell application "Day One" to activate
-tell application "System Events"
-	
-	tell process "Day One"
-		try
-			tell button 3 of group 1 of splitter group 1 of window "Existential"
-				set {xPosition, yPosition} to position
-				set {xSize, ySize} to size
-			end tell
-			-- modify offsets if hot spot is not centered:
-			click at {xPosition + (xSize div 2), yPosition + (ySize div 2)}
-		end try
-		
-		--		perform action "AXPress" of button 3 of group 1 of splitter group 1 of window "Existential"
-		select button 3 of group 1 of splitter group 1 of window "Existential"
-		
-		--click button 1 of group 2 of toolbar 1 of window 1
-	end tell
-end tell
