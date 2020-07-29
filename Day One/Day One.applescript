@@ -29,7 +29,13 @@ on getAddress()
 end getAddress
 
 on newItem()
-	
+	set entryText to "$title"
+	set theResult to do shell script "/usr/local/bin/dayone2 new \"" & entryText & "\""
+	set theRegex to "(?:(?:.*)Created new entry with uuid: )([\\d|\\w]{32})"
+	tell script "Text" to set theResult to (search text theResult for theRegex using pattern matching)
+	set theUUID to foundText of first item of foundGroups of first item of theResult
+	set theEntryAddress to "dayone2://view?entryId=" & theUUID
+	get theEntryAddress
 end newItem
 
 --getAddress()
