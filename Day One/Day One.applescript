@@ -5,41 +5,48 @@ on openItem()
 	
 end openItem
 
--- Relies on: 
---	1. A Keyboard Maestro Macro called Get Name. This in turn depends on #2 and #3.
---	2. A Keyboard Maestro Macro called Trigger Context menu. 
---		Why? I use KM to simulate mouse clicks. For reasons unbeknownst to me,
---		the usual 'AXPress' action on the item is not responding purely via AppleScript.
---	3. JSON Helper, because I'm lazy and it was the closest available JSON parser. 
---		https://apps.apple.com/us/app/json-helper-for-applescript/id453114608?mt=12
 on getName()
-	tell application "Keyboard Maestro Engine"
-		-- Replace the key below with the UUID of the Get Name macro in your library.
-		do script "75997582-CA67-4297-A731-B2B4B6737BCE"
-		-- or: do script "Get Name"
-		-- or: do script "AA1810E9-3A37-47F1-AC87-9515A637F8A7" with parameter "Whatever"
-		
-		set theName to getvariable "Current Hook Resource Name"
-		return theName
+	tell application "System Events"
+		tell process "Day One"
+			set entryText to value of text area 1 of scroll area 1 of group 1 of splitter group 1 of window 1
+			get first paragraph of entryText
+		end tell
 	end tell
-	
 end getName
 
--- Relies on: 
---	1. A Keyboard Maestro Macro called Get Address. This depends on #2.
---	2. A Keyboard Maestro Macro called Trigger Context menu. 
---		Why? I use KM to simulate mouse clicks. For reasons unbeknownst to me,
---		the usual 'AXPress' action on the item is not responding purely via AppleScript.
 on getAddress()
-	tell application "Keyboard Maestro Engine"
-		-- Replace the key below with the UUID of the Get Address macro in your library.
-		do script "020C0E13-26F2-4905-9164-C0A95884F69B"
-		-- or: do script "Get Address"
+	set the clipboard to ""
+	delay 0.05
+	
+	tell application "System Events"
+		tell process "Day One"
+			set entryPane to group 1 of splitter group 1 of window 1
+			set theEntryMenuButton to (first button where its accessibility description = "Entry Menu") of entryPane
+			click theEntryMenuButton
+			
+			delay 0.05
+			set entryMenu to menu 1 of theEntryMenuButton
+			set shareMenu to menu item "Share" of entryMenu
+			click shareMenu
+			
+			delay 0.05
+			click menu item "Copy Entry URL" of menu 1 of shareMenu
+		end tell
 		
-		set theAddress to getvariable "Current Hook Resource Address"
-		return theAddress
+		repeat 50 times -- poll clipboard for ~2.5 seconds
+			try
+				if (the clipboard) is not equal to "" then
+					exit repeat
+				end if
+			end try
+			delay 0.05
+		end repeat
+		
+		set theAddr to (the clipboard) as text
+		
 	end tell
 	
+	return theAddr
 end getAddress
 
 -- Relies on two items: 
